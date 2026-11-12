@@ -54,6 +54,8 @@
     <button id="go" class="primary" style="min-height:48px">Entrar</button>
     <div class="msg" id="err" role="alert"></div>
     <div class="note">Elige un sonido, enciéndelo y gira el teléfono para transformarlo. Tu línea aparece en la pantalla grande.</div>
+    <div class="note" style="border-top:1px solid var(--line);padding-top:12px">¿Eres quien proyecta? La pantalla grande crea la sala y muestra el QR para los teléfonos:
+      <a id="aPantalla" href="pantalla.html" style="display:block;margin-top:8px;text-align:center;padding:12px;border:1px solid #3ddc84;border-radius:var(--r-m);color:#3ddc84;font-weight:700;text-decoration:none">Abrir la pantalla (proyector)</a></div>
   </div>
 
   <div id="app" hidden>
@@ -92,19 +94,21 @@ const cuerda = new Ondas.Cuerda(dev);
 const pub = (t, o, op = {}) => client && client.connected && client.publish(t, JSON.stringify(o), op);
 
 // ============================ CONEXIÓN ============================
+let enLinea = false; // broker en línea: se manda menos seguido para no gastar la cuota del broker
 async function conectar() {
   TOP = Ondas.temas(sala);
   const status = online => ({ online, name, app: 'ondas' });
-  const o = await Tacto.open({ clientId: 'ond-' + dev, preferLocal: true, will: { topic: TOP.dev(dev, 'status'), payload: JSON.stringify(status(false)), qos: 1, retain: true } });
-  client = o.client;
-  client.on('connect', () => {
-    $('#st').textContent = '● conectado'; $('#st').className = 'on';
-    pub(TOP.dev(dev, 'status'), status(true), { qos: 1, retain: true }); sucio = true;
-  });
   setInterval(() => pub(TOP.dev(dev, 'status'), status(true), { qos: 1, retain: true }), 8000); // latido
-  client.on('reconnect', () => { $('#st').textContent = 'Reconectando…'; $('#st').className = 'warn'; });
-  client.on('offline', () => { $('#st').textContent = 'Sin conexión'; $('#st').className = 'warn'; });
-  client.on('error', e => { $('#err2').textContent = 'MQTT: ' + (e.message || e); });
+  await Ondas.conectar({ clientId: 'ond-' + dev, will: { topic: TOP.dev(dev, 'status'), payload: JSON.stringify(status(false)), qos: 1, retain: true } }, (cl, broker) => {
+    client = cl; enLinea = !Ondas.esLocal(broker);
+    cl.on('connect', () => {
+      $('#st').textContent = enLinea ? '● en línea' : '● conectado'; $('#st').className = 'on'; $('#err2').textContent = '';
+      pub(TOP.dev(dev, 'status'), status(true), { qos: 1, retain: true }); sucio = true;
+    });
+    cl.on('reconnect', () => { $('#st').textContent = 'Reconectando…'; $('#st').className = 'warn'; });
+    cl.on('offline', () => { $('#st').textContent = 'Sin conexión'; $('#st').className = 'warn'; });
+    cl.on('error', e => { $('#err2').textContent = 'MQTT: ' + (e.message || e); });
+  });
 }
 
 // ============================ TU SONIDO (suena en este teléfono) ============================
@@ -113,15 +117,18 @@ async function conectar() {
 let audioSucio = false, ondaEnviada = false;
 const aplicarAudio = () => { if (OndasAudio.iniciado) OndasAudio.actualizar(dev, { on, sonido, p: P }); audioSucio = false; };
 async function asegurarSonido() { const s = sonidos.find(x => x.id === sonido); if (s && OndasAudio.iniciado) await OndasAudio.cargar([s]); }
+let ultimaOnda = 0;
 setInterval(() => {
   const r = on && OndasAudio.iniciado ? OndasAudio.analizar(dev) : null;
   if (r) cuerda.recibir(r.b, r.n); else cuerda.callar();
-  if (r || ondaEnviada) { pub(TOP && TOP.dev(dev, 'onda'), r ? { b: r.b.map(x => Math.round(x * 99)), n: Math.round(r.n * 99) } : { b: [0, 0, 0, 0, 0, 0, 0, 0], n: 0 }); ondaEnviada = !!r; }
+  if (performance.now() - ultimaOnda < (enLinea ? 160 : 80)) return; // en línea: ~6 por segundo; en red local: ~12
+  if (r || ondaEnviada) { pub(TOP && TOP.dev(dev, 'onda'), r ? [Math.round(r.n * 99), ...r.b.map(x => Math.round(x * 99))] : [0, 0, 0, 0, 0, 0, 0, 0, 0]); ondaEnviada = !!r; ultimaOnda = performance.now(); }
 }, 80);
 // el estado viaja a la pantalla ~15 veces por segundo, solo si cambió (y cada 2 s por si acaso)
 let ultimoEnvio = 0;
 setInterval(() => {
   if (!sucio && performance.now() - ultimoEnvio < 2000) return;
+  if (enLinea && performance.now() - ultimoEnvio < 140) return; // en línea: hasta ~7 por segundo
   const p = {}; for (const k in P) p[k] = Math.round(P[k] * 1000) / 1000;
   if (pub(TOP && TOP.dev(dev, 'estado'), { on, sonido, modo: modo.id, p })) { sucio = false; ultimoEnvio = performance.now(); }
 }, 66);
