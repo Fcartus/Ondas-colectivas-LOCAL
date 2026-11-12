@@ -1,5 +1,4 @@
-# Ondas-colectivas
-
+# Ondas colectivas
 
 Una experiencia presencial para **más de 20 personas a la vez**: cada una escanea un QR, elige un sonido (un loop corto), lo enciende y lo **transforma girando el teléfono**. Cada persona es un **par de líneas** que vibran según su sonido real: la ve en su propio teléfono y, al mismo tiempo, proyectada en la pantalla grande junto a las de todos los demás. En reposo las líneas son rectas y verdes; con sonido se curvan, se cruzan y se encienden hacia el blanco, el rosado y el rojo.
 
