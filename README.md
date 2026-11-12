@@ -29,7 +29,7 @@ En el computador abre **`https://localhost:8443/pantalla`**.
 ### Dónde suena
 
 - **Cada persona suena en su propio teléfono, siempre**, desde que toca ENCENDER hasta que apaga. Así el audio de 20+ personas se reparte entre los teléfonos y no se satura un solo parlante. El teléfono genera su loop con el mismo motor de la pantalla, lo analiza (8 bandas de frecuencia y su nivel) y con eso dibuja su línea; esa misma medición viaja a la pantalla ~12 veces por segundo.
-- **La pantalla parte en silencio:** solo muestra. En el panel (**B**), **Activar sonido de la pantalla** suma además la mezcla de todos por los parlantes de la sala (cada voz con el estado que manda su teléfono); el mismo botón la vuelve a apagar. La cabecera dice dónde está sonando: *🔈 en los teléfonos* o *🔊 pantalla + teléfonos*.
+- **La pantalla parte en silencio:** solo muestra. En el panel (**B**), **Activar sonido de la pantalla** suma además la mezcla de todos por los parlantes de la sala (cada voz con el estado que manda su teléfono); el mismo botón la vuelve a apagar.
 - Con el sonido de la pantalla activado, reverb y eco son uno solo para todos y el volumen de cada voz baja solo cuando suenan muchas, para no saturar.
 
 > **iPhone:** el volumen del sonido es el del teléfono. La página pide a Safari que suene aunque esté el interruptor de silencio; si en algún iPhone no se escucha, revisa ese interruptor y sube el volumen.
@@ -88,9 +88,9 @@ Sin sensor de giro (en un computador, o si no se dio el permiso) se puede **arra
 Los loops son los archivos de audio de **`public/sonidos/`** (wav, mp3, ogg, m4a, flac). Para agregar los tuyos:
 
 1. Cópialos a esa carpeta. Que duren **10 segundos o menos** y que empiecen y terminen limpios para que el loop no haga clic.
-2. Recarga la pantalla y los teléfonos. Aparecen solos, con el nombre del archivo (el número del comienzo sirve para ordenarlos y no se muestra: `1-pulso grave.wav` → *pulso grave*).
+2. Recarga la pantalla y los teléfonos. Aparecen solos, con el nombre del archivo (el número del comienzo sirve para ordenarlos y no se muestra)
 
-Vienen 5 loops de ejemplo, sintetizados (sin derechos de autor): *pulso grave*, *colchón*, *arpegio*, *lluvia* y *campanas*. Bórralos cuando subas los tuyos.
+Vienen 5 loops integrados, elegidos y rescatados desde freesound.org
 
 ## La pantalla (panel, tecla **B**)
 
